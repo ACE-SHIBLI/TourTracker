@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TourTracker</title>
+<meta name="theme-color" content="#14171C">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#14171C;
+    --surface:#1B1F26;
+    --surface-raised:#21262E;
+    --line:#2A2F38;
+    --text:#F2F0EA;
+    --muted:#8B92A0;
+    --flame:#FF6B35;
+    --ember:#FFB000;
+    --win:#3DDC97;
+    --loss:#FF4757;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',system-ui,sans-serif;
+    min-height:100vh;
+    padding-bottom:48px;
+  }
+  .wrap{max-width:520px;margin:0 auto;padding:20px 16px 8px;}
+
+  header.hero{padding:6px 4px 22px;}
+  .org{
+    font-family:'Rajdhani',sans-serif;
+    font-weight:600;
+    font-size:13px;
+    letter-spacing:.14em;
+    color:var(--flame);
+    margin:0 0 4px;
+  }
+  h1{
+    font-family:'Rajdhani',sans-serif;
+    font-weight:700;
+    font-size:30px;
+    line-height:1.05;
+    margin:0;
+    color:var(--text);
+  }
+  .sub{color:var(--muted);font-size:13.5px;margin-top:6px;}
+
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:22px;}
+  .stat{
+    background:var(--surface);
+    border:1px solid var(--line);
+    padding:14px 14px 12px;
+  }
+  .stat .label{font-size:11.5px;color:var(--muted);margin-bottom:6px;}
+  .stat .value{
+    font-family:'Rajdhani',sans-serif;
+    font-weight:700;
+    font-size:22px;
+    letter-spacing:.01em;
+  }
+  .stat.win .value{color:var(--win);}
+  .stat.loss .value{color:var(--loss);}
+
+  section{margin-bottom:26px;}
+  .section-title{
+    font-family:'Rajdhani',sans-serif;
+    font-weight:600;
+    font-size:15px;
+    color:var(--text);
+    margin:0 0 10px;
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+  }
+  .section-title span.count{color:var(--muted);font-weight:500;font-size:12.5px;}
+
+  form{
+    background:var(--surface);
+    border:1px solid var(--line);
+    padding:16px;
+  }
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .field{margin-bottom:12px;}
+  .field.full{grid-column:1/-1;}
+  label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px;}
+  input{
+    width:100%;
+    background:var(--bg);
+    border:1px solid var(--line);
+    color:var(--text);
+    padding:10px 10px;
+    font-family:'Inter',sans-serif;
+    font-size:15px;
+  }
+  input:focus{outline:none;border-color:var(--flame);}
+  input[type="date"]{color-scheme:dark;}
+
+  .form-actions{display:flex;gap:10px;margin-top:4px;}
+  button{
+    font-family:'Rajdhani',sans-serif;
+    font-weight:600;
+    font-size:15px;
+    letter-spacing:.02em;
+    border:none;
+    cursor:pointer;
+    padding:11px 16px;
+  }
+  .btn-primary{background:var(--flame);color:#1A0D06;flex:1;}
+  .btn-primary:active{background:#e85f2c;}
+  .btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--line);}
+  .btn-ghost:active{background:var(--surface-raised);}
+
+  .chart-box{
+    background:var(--surface);
+    border:1px solid var(--line);
+    padding:16px 14px 8px;
+  }
+  .chart-empty{color:var(--muted);font-size:13px;padding:18px 4px;text-align:center;}
+
+  .log-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:12px 2px;
+    border-bottom:1px solid var(--line);
+    gap:10px;
+  }
+  .log-row:last-child{border-bottom:none;}
+  .log-left{min-width:0;}
+  .log-date{font-family:'Rajdhani',sans-serif;font-weight:600;font-size:15px;}
+  .log-name{color:var(--muted);font-size:12.5px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .log-mid{display:flex;gap:14px;font-size:13px;color:var(--muted);white-space:nowrap;}
+  .log-mid b{color:var(--text);font-weight:500;}
+  .log-net{
+    font-family:'Rajdhani',sans-serif;
+    font-weight:700;
+    font-size:15.5px;
+    min-width:78px;
+    text-align:right;
+  }
+  .log-net.win{color:var(--win);}
+  .log-net.loss{color:var(--loss);}
+  .log-del{background:none;border:none;color:var(--muted);font-size:18px;padding:4px 2px 4px 8px;line-height:1;}
+
+  .empty-state{
+    border:1px dashed var(--line);
+    padding:26px 16px;
+    text-align:center;
+    color:var(--muted);
+    font-size:13.5px;
+  }
+
+  .footer-actions{display:flex;gap:10px;margin-top:4px;}
+  .footer-actions button{flex:1;font-size:13px;padding:10px;}
+
+  .toast{
+    position:fixed;
+    left:50%;
+    bottom:22px;
+    transform:translateX(-50%) translateY(20px);
+    background:var(--surface-raised);
+    border:1px solid var(--line);
+    color:var(--text);
+    padding:10px 16px;
+    font-size:13px;
+    opacity:0;
+    transition:opacity .2s ease, transform .2s ease;
+    pointer-events:none;
+    white-space:nowrap;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <p class="org">GOAT FIRE ESPORTS</p>
+    <h1>TourTracker</h1>
+    <p class="sub">Entry fees, winnings, and net result — per tournament.</p>
+  </header>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="label">Tournaments played</div>
+      <div class="value" id="statCount">0</div>
+    </div>
+    <div class="stat">
+      <div class="label">Total entry fees</div>
+      <div class="value" id="statFees">৳0</div>
+    </div>
+    <div class="stat">
+      <div class="label">Total winnings</div>
+      <div class="value" id="statWinnings">৳0</div>
+    </div>
+    <div class="stat" id="statNetBox">
+      <div class="label">Net profit / loss</div>
+      <div class="value" id="statNet">৳0</div>
+    </div>
+  </div>
+
+  <section>
+    <p class="section-title" id="formTitle">Log a tournament</p>
+    <form id="entryForm">
+      <div class="row">
+        <div class="field">
+          <label for="fDate">Date</label>
+          <input type="date" id="fDate" required>
+        </div>
+        <div class="field">
+          <label for="fFee">Entry fee (৳)</label>
+          <input type="number" id="fFee" min="0" step="1" placeholder="0" required>
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="fPrize">Prize won (৳)</label>
+          <input type="number" id="fPrize" min="0" step="1" placeholder="0" required>
+        </div>
+        <div class="field">
+          <label for="fName">Tournament / opponent</label>
+          <input type="text" id="fName" placeholder="Optional">
+        </div>
+      </div>
+      <input type="hidden" id="fId">
+      <div class="form-actions">
+        <button type="submit" class="btn-primary" id="submitBtn">Add entry</button>
+        <button type="button" class="btn-ghost" id="cancelEdit" style="display:none;">Cancel</button>
+      </div>
+    </form>
+  </section>
+
+  <section>
+    <p class="section-title">Net result by tournament</p>
+    <div class="chart-box" id="chartBox">
+      <div class="chart-empty">Add a few entries to see the trend.</div>
+    </div>
+  </section>
+
+  <section>
+    <p class="section-title">History <span class="count" id="historyCount"></span></p>
+    <div id="historyList"></div>
+  </section>
+
+  <div class="footer-actions">
+    <button class="btn-ghost" id="exportBtn">Export CSV</button>
+    <button class="btn-ghost" id="clearBtn">Clear all</button>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const STORAGE_KEY = 'gfe_ledger_entries';
+const $ = (id) => document.getElementById(id);
+
+function loadEntries(){
+  try{
+    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+  }catch(e){ return []; }
+}
+function saveEntries(entries){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+}
+function fmtMoney(n){
+  const sign = n < 0 ? '-' : '';
+  return sign + '৳' + Math.abs(Math.round(n)).toLocaleString('en-BD');
+}
+function fmtDateShort(iso){
+  const d = new Date(iso + 'T00:00:00');
+  return d.toLocaleDateString('en-GB', {day:'2-digit', month:'short'});
+}
+
+let entries = loadEntries();
+let editingId = null;
+
+function render(){
+  entries = loadEntries();
+  const sorted = [...entries].sort((a,b)=> a.date.localeCompare(b.date));
+
+  // stats
+  const count = entries.length;
+  const totalFees = entries.reduce((s,e)=>s+e.fee,0);
+  const totalPrize = entries.reduce((s,e)=>s+e.prize,0);
+  const net = totalPrize - totalFees;
+
+  $('statCount').textContent = count;
+  $('statFees').textContent = fmtMoney(totalFees);
+  $('statWinnings').textContent = fmtMoney(totalPrize);
+  $('statNet').textContent = fmtMoney(net);
+  const netBox = $('statNetBox');
+  netBox.classList.remove('win','loss');
+  netBox.classList.add(net >= 0 ? 'win' : 'loss');
+
+  // chart (last 12, chronological)
+  renderChart(sorted.slice(-12));
+
+  // history (most recent first)
+  renderHistory([...entries].sort((a,b)=> b.date.localeCompare(a.date) || b.id - a.id));
+}
+
+function renderChart(list){
+  const box = $('chartBox');
+  if(list.length === 0){
+    box.innerHTML = '<div class="chart-empty">Add a few entries to see the trend.</div>';
+    return;
+  }
+  const w = 480, h = 130, padX = 6;
+  const barGap = 8;
+  const barW = Math.max(10, Math.min(34, (w - padX*2)/list.length - barGap));
+  const nets = list.map(e => e.prize - e.fee);
+  const maxAbs = Math.max(...nets.map(n=>Math.abs(n)), 1);
+  const midY = h/2;
+  const scale = (h/2 - 14) / maxAbs;
+
+  let bars = '';
+  const totalW = list.length * (barW + barGap) - barGap;
+  let startX = (w - totalW)/2;
+
+  list.forEach((e, i) => {
+    const net = e.prize - e.fee;
+    const barH = Math.abs(net) * scale;
+    const x = startX + i*(barW+barGap);
+    const y = net >= 0 ? midY - barH : midY;
+    const color = net >= 0 ? 'var(--win)' : 'var(--loss)';
+    bars += `<rect x="${x}" y="${y}" width="${barW}" height="${Math.max(barH,2)}" fill="${color}" />`;
+  });
+
+  const svg = `
+    <svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" xmlns="http://www.w3.org/2000/svg">
+      <line x1="0" y1="${midY}" x2="${w}" y2="${midY}" stroke="#2A2F38" stroke-width="1"/>
+      ${bars}
+    </svg>`;
+  box.innerHTML = svg;
+}
+
+function renderHistory(list){
+  $('historyCount').textContent = list.length ? `(${list.length})` : '';
+  const container = $('historyList');
+  if(list.length === 0){
+    container.innerHTML = '<div class="empty-state">No tournaments logged yet. Add your first entry above.</div>';
+    return;
+  }
+  container.innerHTML = list.map(e => {
+    const net = e.prize - e.fee;
+    const netClass = net >= 0 ? 'win' : 'loss';
+    const netSign = net > 0 ? '+' : '';
+    return `
+      <div class="log-row" data-id="${e.id}">
+        <div class="log-left">
+          <div class="log-date">${fmtDateShort(e.date)}</div>
+          ${e.name ? `<div class="log-name">${escapeHtml(e.name)}</div>` : ''}
+        </div>
+        <div class="log-mid">
+          <span>Fee <b>${fmtMoney(e.fee)}</b></span>
+          <span>Won <b>${fmtMoney(e.prize)}</b></span>
+        </div>
+        <div class="log-net ${netClass}">${netSign}${fmtMoney(net)}</div>
+        <button class="log-del" data-del="${e.id}" title="Delete">×</button>
+      </div>`;
+  }).join('');
+
+  container.querySelectorAll('.log-row').forEach(row => {
+    row.addEventListener('click', (ev) => {
+      if(ev.target.closest('.log-del')) return;
+      startEdit(Number(row.dataset.id));
+    });
+  });
+  container.querySelectorAll('.log-del').forEach(btn => {
+    btn.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      deleteEntry(Number(btn.dataset.del));
+    });
+  });
+}
+
+function escapeHtml(s){
+  return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function startEdit(id){
+  const e = entries.find(x => x.id === id);
+  if(!e) return;
+  editingId = id;
+  $('fDate').value = e.date;
+  $('fFee').value = e.fee;
+  $('fPrize').value = e.prize;
+  $('fName').value = e.name || '';
+  $('fId').value = id;
+  $('formTitle').textContent = 'Edit tournament';
+  $('submitBtn').textContent = 'Save changes';
+  $('cancelEdit').style.display = 'inline-block';
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function resetForm(){
+  editingId = null;
+  $('entryForm').reset();
+  $('fId').value = '';
+  $('formTitle').textContent = 'Log a tournament';
+  $('submitBtn').textContent = 'Add entry';
+  $('cancelEdit').style.display = 'none';
+  $('fDate').value = todayIso();
+}
+
+function todayIso(){
+  const d = new Date();
+  const off = d.getTimezoneOffset();
+  const local = new Date(d.getTime() - off*60000);
+  return local.toISOString().slice(0,10);
+}
+
+function deleteEntry(id){
+  if(!confirm('Delete this entry?')) return;
+  entries = entries.filter(e => e.id !== id);
+  saveEntries(entries);
+  if(editingId === id) resetForm();
+  render();
+  showToast('Entry deleted');
+}
+
+$('entryForm').addEventListener('submit', (ev) => {
+  ev.preventDefault();
+  const date = $('fDate').value;
+  const fee = parseFloat($('fFee').value) || 0;
+  const prize = parseFloat($('fPrize').value) || 0;
+  const name = $('fName').value.trim();
+
+  if(editingId){
+    entries = entries.map(e => e.id === editingId ? {...e, date, fee, prize, name} : e);
+    showToast('Entry updated');
+  } else {
+    entries.push({ id: Date.now(), date, fee, prize, name });
+    showToast('Entry added');
+  }
+  saveEntries(entries);
+  resetForm();
+  render();
+});
+
+$('cancelEdit').addEventListener('click', resetForm);
+
+$('exportBtn').addEventListener('click', () => {
+  if(entries.length === 0){ showToast('Nothing to export yet'); return; }
+  const rows = [['Date','Tournament','Entry Fee','Prize Won','Net']];
+  [...entries].sort((a,b)=>a.date.localeCompare(b.date)).forEach(e=>{
+    rows.push([e.date, e.name || '', e.fee, e.prize, e.prize - e.fee]);
+  });
+  const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `gfe-ledger-${todayIso()}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+$('clearBtn').addEventListener('click', () => {
+  if(entries.length === 0) return;
+  if(!confirm('Delete ALL entries? This cannot be undone.')) return;
+  entries = [];
+  saveEntries(entries);
+  resetForm();
+  render();
+  showToast('All entries cleared');
+});
+
+let toastTimer;
+function showToast(msg){
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=> t.classList.remove('show'), 1800);
+}
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
+
+$('fDate').value = todayIso();
+render();
+</script>
+</body>
+</html>
